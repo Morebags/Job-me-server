@@ -114,7 +114,9 @@ const getUsersAppliedJobs = async (req, res) => {
     const user = await USER.findById({ _id: userId }).populate(
       "jobsApplied.job"
     );
-    const appliedJobs = user.jobsApplied;
+    const appliedJobs = user.jobsApplied.sort(
+      (a, b) => b.dateApplied - a.dateApplied
+    );
     res.status(200).json({ success: true, numOfJobs: appliedJobs.length, jobs: appliedJobs });
   } catch (error) {
     console.log(error);
