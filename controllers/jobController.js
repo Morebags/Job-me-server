@@ -55,7 +55,7 @@ const getLatestJobs = async (req, res) => {
     res.json(error);
   }
 };
-// get a single job - related job //$eq ,  $ne = not
+// get a single job - related job
 const getSingleJob = async (req, res) => {
   const { jobId } = req.params;
 
@@ -65,7 +65,8 @@ const getSingleJob = async (req, res) => {
     const similarJobs = await JOB.find({
       _id: { $ne: jobId }, // Exclude the current job
       industry: job.industry,
-    }).sort("-createdAt")
+    })
+      .sort("-createdAt")
       .limit(3);
 
     res.status(200).json({ success: true, job, similarJobs });
@@ -117,7 +118,13 @@ const getUsersAppliedJobs = async (req, res) => {
     const appliedJobs = user.jobsApplied.sort(
       (a, b) => b.dateApplied - a.dateApplied
     );
-    res.status(200).json({ success: true, numOfJobs: appliedJobs.length, jobs: appliedJobs });
+    res
+      .status(200)
+      .json({
+        success: true,
+        numOfJobs: appliedJobs.length,
+        jobs: appliedJobs,
+      });
   } catch (error) {
     console.log(error);
     res.json(error.message);
@@ -152,18 +159,20 @@ const updateJobStatus = async (req, res) => {
     res.status(error?.code || 500).json(error.message);
   }
 };
+
 const getUniqueLocations = async (req, res) => {
   try {
     const jobLocations = await JOB.find().select('location')
+    const jobIndustries = await JOB.find().select('industry')
     const uniqueLocations = [...new Set(jobLocations.map((job) => job.location))].sort()
-    res.status(200).json({success: true, location: uniqueLocations})
+    const uniqueIndustries = [...new Set(jobIndustries.map((job) => job.industry))].sort()
+    res.status(200).json({ success: true, location: uniqueLocations, industries: uniqueIndustries })
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
 }
 
 module.exports = {
-  getUniqueLocations,
   getAllJobs,
   getLatestJobs,
   getSingleJob,
@@ -171,4 +180,5 @@ module.exports = {
   applyForJob,
   getUsersAppliedJobs,
   updateJobStatus,
+  getUniqueLocations,
 };
